@@ -16,7 +16,7 @@ if __name__ == "__main__":
     ########################## Parsing command line ############################
     parser = argparse.ArgumentParser(description='Program to create patient formatted file for Tmax estimation')
     parser.add_argument("dcm_dir", help="Directory path containing the DCM files of a patient", type=str)
-    parser.add_argument("tmax_dir", help="Directory containing the Tmax value file", type=str)
+    parser.add_argument("tmax_dir", help="Directory containing the Tmax value file; if multiple directories, use colon-separated paths", type=str)
     parser.add_argument("wind_cent", help="Windowing center value", type=float)
     parser.add_argument("wind_widt", help="Windowing width value", type=float)
     parser.add_argument("out_file", help="Output HDF5 file contaning processed data", type=str)
@@ -71,16 +71,21 @@ if __name__ == "__main__":
     tmax_dir = args.tmax_dir
 
     # Adding final slash if necessary
-    if dmc_dir[-1] != "/":
-        dmc_dir += "/"
-    if tmax_dir[-1] != "/":
-        tmax_dir += "/"
+    dmc_dirs = dmc_dir.split(":")
+    for idx in range(len(dmc_dirs)):
+        if dmc_dirs[idx][-1] != "/":
+            dmc_dirs[idx] += "/"
+    tmax_dirs = tmax_dir.split(":")
+    for idx in range(len(tmax_dirs)):
+        if tmax_dirs[idx][-1] != "/":
+            tmax_dirs[idx] += "/"
 
-    print("DCM directory: ", dmc_dir)
-    print("tmax directory: ", tmax_dir)
+
+    print("DCM directories: ", dmc_dirs)
+    print("tmax directories: ", tmax_dirs)
 
     # Processing slices
-    ct_image, x_axis_ct, y_axis_ct, z_axis_ct, time_axes = read_slices(dmc_dir, verbose=verb)
+    ct_image, x_axis_ct, y_axis_ct, z_axis_ct, time_axes = read_slices(dmc_dirs, verbose=verb)
 
     # Rotation
     ct_image, ang = image4D_rotation(ct_image)
@@ -164,7 +169,7 @@ if __name__ == "__main__":
 
     ############################# Labels processing ############################
     # Reading Tmax file
-    tmax, tmax_z_axis = read_Tmax(tmax_dir)
+    tmax, tmax_z_axis = read_Tmax(tmax_dirs)
     tmax_raw = copy.deepcopy(tmax)
     tmax_z_axis_raw = copy.deepcopy(tmax_z_axis)
     tmax = tmax_rotation(tmax, ang)

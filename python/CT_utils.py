@@ -27,10 +27,12 @@ from scipy.ndimage import convolve1d
 from skimage import feature
 
 
-def read_slices(dir_ct, verbose=True):
+def read_slices(dirs_ct, verbose=True):
     """Function to read all slices for a given patient"""
-    # Get the number of CT images in the directory
-    list_ct_files = os.listdir(dir_ct)
+    # Get the number of CT images in the directories
+    list_ct_files = []
+    for dir_ct in dirs_ct:
+        list_ct_files += os.listdir(dir_ct)
     number_files_ct = len(list_ct_files)
     if verbose:
         print("\tThere are ",number_files_ct," CT images for this patient")
@@ -126,9 +128,11 @@ def read_slices(dir_ct, verbose=True):
 
     return ct_image, x_axis_ct, y_axis_ct, z_axis_ct, acquistion_time
 
-def read_Tmax(tmax_dir, verbose=True):
+def read_Tmax(tmax_dirs, verbose=True):
     """Function to read Tmax slices"""
-    list_tmax_files = os.listdir(tmax_dir)
+    list_tmax_files = []
+    for tmax_dir in tmax_dirs:
+        list_tmax_files += os.listdir(tmax_dir)
     number_files_tmax = len(list_tmax_files)
     if verbose:
         print("\tThere are ",number_files_tmax," TMax images for this patient")
