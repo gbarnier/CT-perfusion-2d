@@ -33,6 +33,7 @@ if __name__ == "__main__":
     parser.add_argument("--ny_patch", help="Number of patches in the y-direction", default=1, type=int)
     parser.add_argument("--skip", nargs='+', help="List of axial slices to skip", default=-1, type=int)
     parser.add_argument("--halo", help="Provide length of halo (in samples)", default=0, type=int)
+    parser.add_argument("--t_desample", help="Time desampling factor", default=1, type=int)
     parser.add_argument("--clip_tmax", help="Provide length of halo (in samples)", default=-1.0, type=float)
     args = parser.parse_args()
 
@@ -54,6 +55,7 @@ if __name__ == "__main__":
     nx_patch = args.nx_patch
     ny_patch = args.ny_patch
     halo = args.halo
+    t_desample = args.t_desample
     skip = args.skip
     clip_tmax = args.clip_tmax
     print("skip: ", skip)
@@ -63,6 +65,7 @@ if __name__ == "__main__":
     print("Output file: ", out_file)
     print("Spatial average filter width: ", args.size)
     print("clip_tmax: ", clip_tmax)
+    print("Time desampling factor: ", t_desample)
     if raw: print("User has requested to output raw data")
     if SEP: print("User has requested to output SEP files")
 
@@ -160,7 +163,7 @@ if __name__ == "__main__":
         print("WARNING! Large time sampling gap detected for %s" % dmc_dir)
 
     # Interpolate time axis
-    ct_image_reg_wind, time_axis = interpolate_time_image4d(ct_image_reg_wind, time_axes)
+    ct_image_reg_wind, time_axis = interpolate_time_image4d(ct_image_reg_wind, time_axes, time_desampling=t_desample)
     n_rect = 6
 
     # Filtering in time (high-cut filter)

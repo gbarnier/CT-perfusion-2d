@@ -320,7 +320,7 @@ def spatial_ave_image4d(image, size=2):
     return output_image
 
 
-def interpolate_time_image4d(image, time_axes, nt=80, dt=1.0):
+def interpolate_time_image4d(image, time_axes, nt=80, dt=1.0, time_desampling=1):
     """Function to interpolate voxel values in time for each time slice"""
     nx = image.shape[3]
     ny = image.shape[2]
@@ -332,6 +332,13 @@ def interpolate_time_image4d(image, time_axes, nt=80, dt=1.0):
         t_ax = time_axes[idx,:]
         time_axis = np.linspace(tmin, tmin+(nt-1)*dt, nt)
         time_series = np.reshape(image[:, idx, :, :], (n_snapshots, ny*nx)).T
+        # Desampling observed snapshots to test low-dosage experiments
+        if time_desampling > 1:
+            nt_samp = t_ax.shape[0]
+            idx_t = np.linspace(0,nt_samp-1, int(nt_samp/time_desampling+0.5), dtype=int)
+            t_ax = t_ax[idx_t]
+            time_series = time_series[:, idx_t]
+        # print(t_ax.shape[0])
         f = interpolate.interp1d(t_ax, time_series, kind='linear', fill_value="extrapolate")
         new_time_series = f(time_axis)
         image_int[:, idx, :, :] = np.reshape(new_time_series.T, (nt, ny, nx))
