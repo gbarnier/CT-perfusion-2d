@@ -37,6 +37,9 @@ def read_slices(dirs_ct, verbose=True):
     if verbose:
         print("\tThere are ",number_files_ct," CT images for this patient")
 
+    # Sorting time slices
+    list_ct_files.sort()
+
     # Create empty lists
     ct_image_list = [] # Contains pydicom dataset for each ct_image
     ct_snapshot_number = [] # Contains snapshot number (ranging from 0 to number of snapshot-1) for each image
@@ -338,9 +341,13 @@ def interpolate_time_image4d(image, time_axes, nt=80, dt=1.0, time_desampling=1)
             idx_t = np.linspace(0,nt_samp-1, int(nt_samp/time_desampling+0.5), dtype=int)
             t_ax = t_ax[idx_t]
             time_series = time_series[:, idx_t]
-        # print(t_ax.shape[0])
-        f = interpolate.interp1d(t_ax, time_series, kind='linear', fill_value="extrapolate")
+        f = interpolate.interp1d(t_ax, time_series, kind='linear', bounds_error=False)
         new_time_series = f(time_axis)
+        # Extrapolating nan values
+        for it in range(nt):
+            nan_idx = np.where(np.isnan(new_time_series[:, it]))[0]
+            if len(nan_idx) > 0:
+                new_time_series[nan_idx,it] = time_series[nan_idx,-1]
         image_int[:, idx, :, :] = np.reshape(new_time_series.T, (nt, ny, nx))
     time_axis -= time_axis[0]
     return image_int, time_axis
